@@ -1,0 +1,20 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "box-renderer",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-12-01",
+	"observability": {
+		"enabled": true
+	},
+	/**
+	 * Shared entry points (e.g., workers.dev) are disabled by default
+	 * to prevent potential leak of secrets.
+	 * You can change the values below to enable or change them at dashboard later.
+	 */
+	"workers_dev": false,
+	"preview_urls": false
+}
