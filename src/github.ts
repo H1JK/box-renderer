@@ -3,17 +3,20 @@ import { BaseGist, GistFiles } from "./gist";
 const USER_AGENT = "cloudflare-worker box-renderer/0.1";
 
 export class GitHubClient {
-    constructor(public token: string, public gist: string) {
+    constructor(public gist: string, public token?: string) {
     }
 
     public async files(): Promise<GistFiles> {
+        const headers: HeadersInit = {
+            "Accept": "application/vnd.github+json",
+            "User-Agent": USER_AGENT,
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        if (this.token !== undefined) {
+            headers["Authorization"] = `Bearer ${this.token}`
+        }
         const response = await fetch(`https://api.github.com/gists/${this.gist}`, {
-            headers: {
-                "Accept": "application/vnd.github+json",
-                "Authorization": `Bearer ${this.token}`,
-                "User-Agent": USER_AGENT,
-                "X-GitHub-Api-Version": "2022-11-28",
-            },
+            headers: headers,
         });
         if (!response.ok) {
             console.error("Fetch gist file list error:", await response.text());

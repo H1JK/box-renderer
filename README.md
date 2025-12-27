@@ -11,5 +11,5 @@ Like [serenity](https://github.com/SagerNet/serenity) and [Sub-Store](https://gi
 - Has zero dependency (except TypeScript).
 - Does no "subscription conversion", just bundles multiple sing-box configurations.
 - Includes a simple cache built with Cloudflare Workers KV for failover.
-- Stores settings in GitHub Gist, accessed via (default) token and Gist ID provided by the URL, thus supports multi-user seamlessly.
+- Stores settings in GitHub Gist, accessed via Gist ID provided by the URL, thus supports multi-user seamlessly.
 - Supports template rules for delivering per-client-version template.

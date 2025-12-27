@@ -20,7 +20,7 @@ export default {
 				});
 			}
 		}
-		let fallbackToken = null;
+		let fallbackToken: string | undefined = undefined;
 		if ("RENDERER_FALLBACK_TOKEN" in env && typeof env.RENDERER_FALLBACK_TOKEN === "string") {
 			fallbackToken = env.RENDERER_FALLBACK_TOKEN;
 		}
@@ -28,10 +28,10 @@ export default {
 
 		const token = url.searchParams.get("token") ?? fallbackToken;
 		const gistID = url.searchParams.get("gist");
-		if (token === null || gistID === null) {
+		if (gistID === null) {
 			return new Response("invalid credentials");
 		}
-		const client = new GitHubClient(token, gistID);
+		const client = new GitHubClient(gistID, token);
 		const gistFiles = await client.files().catch((reason) => {
 			return new Response(`Failed to fetch gist files: ${reason}`, {
 				status: 400
