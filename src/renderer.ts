@@ -18,6 +18,17 @@ export class Renderer {
         this.resourceMap = new Map();
     }
 
+    private regexGo(re: string): RegExp {
+        // we only support the "case-insensitive" flag here
+        // since other flags are usually not used by our cases
+        let flag = "";
+        if (re.startsWith("(?i)")) {
+            re = re.substring("(?i)".length);
+            flag = "i";
+        }
+        return new RegExp(re, flag);
+    }
+
     async render(): Promise<object> {
         let template = this.config.templates[0];
         // find template by rule
@@ -53,8 +64,8 @@ export class Renderer {
             };
             const included = new Set<Routable>();
             for (const [tag, option] of typedEntries(template.options?.append?.outbounds)) {
-                const filterMatchers = option?.filter?.map(RegExp);
-                const excludeMatchers = option?.exclude?.map(RegExp);
+                const filterMatchers = option?.filter?.map(this.regexGo);
+                const excludeMatchers = option?.exclude?.map(this.regexGo);
                 const filterAndAppend = (resource: Resource, _resourceTag: string) => {
                     resource.outbounds?.forEach(outbound => {
                         if (filterMatchers !== undefined && filterMatchers.every(matcher => matcher.test(outbound.tag))) return;
@@ -74,8 +85,8 @@ export class Renderer {
                 }
             }
             for (const [tag, option] of typedEntries(template.options?.append?.endpoints)) {
-                const filterMatchers = option?.filter?.map(RegExp);
-                const excludeMatchers = option?.exclude?.map(RegExp);
+                const filterMatchers = option?.filter?.map(this.regexGo);
+                const excludeMatchers = option?.exclude?.map(this.regexGo);
                 const filterAndAppend = (resource: Resource, _resourceTag: string) => {
                     resource.endpoints?.forEach(endpoint => {
                         if (filterMatchers !== undefined && filterMatchers.every(matcher => matcher.test(endpoint.tag))) return;
@@ -101,11 +112,11 @@ export class Renderer {
                 if (group === undefined) {
                     return Promise.reject(`Routable group tag [${groupTag}] is not found`);
                 }
-                const filterMatchers = option?.filter?.map(RegExp);
-                const excludeMatchers = option?.exclude?.map(RegExp);
+                const filterMatchers = option?.filter?.map(this.regexGo);
+                const excludeMatchers = option?.exclude?.map(this.regexGo);
                 included.forEach(routable => {
-                    if (filterMatchers !== undefined && filterMatchers.every(matcher => matcher.test(routable.tag))) return;
-                    if (excludeMatchers !== undefined && excludeMatchers.some(matcher => matcher.test(routable.tag))) return;
+                    if (filterMatchers !== undefined && !filterMatchers.every(matcher => matcher.test(routable.tag))) return;
+                    if (excludeMatchers !== undefined && !excludeMatchers.some(matcher => matcher.test(routable.tag))) return;
                     if (group.outbounds === undefined) group.outbounds = [];
                     group.outbounds.push(routable.tag);
                 });
@@ -194,22 +205,22 @@ export class Renderer {
             }
             const process = (resource: Resource) => {
                 resourceConfig.options?.filter?.forEach(re => {
-                    const matcher = new RegExp(re);
+                    const matcher = this.regexGo(re);
                     resource.outbounds = resource.outbounds?.filter(it => matcher.test(it.tag));
                     resource.endpoints = resource.endpoints?.filter(it => matcher.test(it.tag));
                 });
                 resourceConfig.options?.exclude?.forEach(re => {
-                    const matcher = new RegExp(re);
+                    const matcher = this.regexGo(re);
                     resource.outbounds = resource.outbounds?.filter(it => !matcher.test(it.tag));
                     resource.endpoints = resource.endpoints?.filter(it => !matcher.test(it.tag));
                 });
                 resourceConfig.options?.filter_type?.forEach(re => {
-                    const matcher = new RegExp(re);
+                    const matcher = this.regexGo(re);
                     resource.outbounds = resource.outbounds?.filter(it => matcher.test(it.type));
                     resource.endpoints = resource.endpoints?.filter(it => matcher.test(it.type));
                 });
                 resourceConfig.options?.exclude_type?.forEach(re => {
-                    const matcher = new RegExp(re);
+                    const matcher = this.regexGo(re);
                     resource.outbounds = resource.outbounds?.filter(it => !matcher.test(it.type));
                     resource.endpoints = resource.endpoints?.filter(it => !matcher.test(it.type));
                 });
